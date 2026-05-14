@@ -9,7 +9,6 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
-
 (function () {
   "use strict";
 
@@ -435,7 +434,8 @@
       reader.onload = (event) => {
         customImageUrl = event.target.result;
         updateCardBackground();
-        document.getElementById("wrtn-img-upload-text").innerText = "이미지 변경 완료";
+        document.getElementById("wrtn-img-upload-text").innerText =
+          "이미지 변경";
         e.target.value = ""; // 동일 이미지 재업로드 가능하도록 input 초기화
       };
       reader.readAsDataURL(file);
@@ -567,11 +567,11 @@
         if (isExtensionOn) {
           toggleBtn.style.backgroundColor = "#ff4432"; // primary
           toggleBtn.style.borderColor = "#ff4432";
-          toggleThumb.style.transform = 'translateX(15px)';
+          toggleThumb.style.transform = "translateX(15px)";
         } else {
           toggleBtn.style.backgroundColor = "";
           toggleBtn.style.borderColor = "";
-          toggleThumb.style.transform = 'translateX(-1px)';
+          toggleThumb.style.transform = "translateX(-1px)";
         }
       });
     }
@@ -585,35 +585,94 @@
   // 바디 전체 감시 (우측 패널이 동적으로 생길 수 있으므로)
   observer.observe(document.body, { childList: true, subtree: true });
 
-  // 6. 텍스트 드래그(선택) 마우스/터치 이벤트
+  // 6. 플로팅 액션 버튼 (Tooltip) 생성
+  const tooltipBtn = document.createElement("button");
+  tooltipBtn.id = "wrtn-quote-tooltip-btn";
+  tooltipBtn.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" width="20" height="20">
+          <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+      </svg>
+      <span>발췌 이미지 만들기</span>
+  `;
+  tooltipBtn.style.cssText = `
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background-color: #4f46e5;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      border: none;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+      font-size: 15px;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: background-color 0.2s, transform 0.1s;
+  `;
+  tooltipBtn.onmouseover = () => {
+    tooltipBtn.style.backgroundColor = "#4338ca";
+  };
+  tooltipBtn.onmouseout = () => {
+    tooltipBtn.style.backgroundColor = "#4f46e5";
+  };
+  tooltipBtn.onmousedown = () => {
+    tooltipBtn.style.transform = "translateX(-50%) scale(0.95)";
+  };
+  tooltipBtn.onmouseup = () => {
+    tooltipBtn.style.transform = "translateX(-50%) scale(1)";
+  };
+
+  document.body.appendChild(tooltipBtn);
+
+  let tempSelectedText = "";
+
+  tooltipBtn.addEventListener("click", () => {
+    if (tempSelectedText) {
+      selectedText = tempSelectedText;
+      currentSessionName = extractSessionName();
+
+      tooltipBtn.style.display = "none";
+      // 모달 띄우기
+      openModal();
+
+      // 선택 해제
+      window.getSelection()?.removeAllRanges();
+    }
+  });
+
+  // 7. 텍스트 드래그(선택) 마우스/터치 이벤트
   const handleSelection = () => {
-    if (!isExtensionOn) return;
+    if (!isExtensionOn) {
+      if (tooltipBtn.style.display !== "none")
+        tooltipBtn.style.display = "none";
+      return;
+    }
 
     // 모달이 열려있는 상태라면 드래그 이벤트를 무시합니다.
     const backdropElement = document.getElementById(
       "wrtn-quote-modal-backdrop",
     );
-    if (backdropElement && backdropElement.classList.contains("active")) return;
+    if (backdropElement && backdropElement.classList.contains("active")) {
+      if (tooltipBtn.style.display !== "none")
+        tooltipBtn.style.display = "none";
+      return;
+    }
 
-    requestAnimationFrame(() => {
-      const selection = window.getSelection();
-      if (selection && selection.toString().trim().length > 0) {
-        let textStr = selection.toString().trim();
-
-        if (textStr) {
-          selectedText = textStr;
-          currentSessionName = extractSessionName();
-
-          // 모달 띄우기
-          openModal();
-
-          // 선택 해제
-          selection.removeAllRanges();
-        }
-      }
-    });
+    const selection = window.getSelection();
+    if (selection && selection.toString().trim().length > 0) {
+      tempSelectedText = selection.toString().trim();
+      tooltipBtn.style.display = "flex";
+    } else {
+      tempSelectedText = "";
+      tooltipBtn.style.display = "none";
+    }
   };
 
-  document.addEventListener("mouseup", handleSelection);
-  document.addEventListener("touchend", handleSelection);
+  document.addEventListener("selectionchange", handleSelection);
 })();
