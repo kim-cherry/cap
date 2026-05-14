@@ -261,7 +261,7 @@
                 </div>
 
                 <div class="wrtn-quote-control-group">
-                    <label>세션 이름 (하단 텍스트)</label>
+                    <label>챗 이름</label>
                     <input type="text" class="wrtn-quote-input" id="wrtn-session-input" />
                 </div>
 
@@ -270,7 +270,7 @@
                         <button class="wrtn-quote-btn active" id="btn-fmt-png">PNG</button>
                         <button class="wrtn-quote-btn" id="btn-fmt-webp">WEBP</button>
                     </div>
-                    <button class="wrtn-quote-download-btn" id="wrtn-download-btn">이미지 저장</button>
+                    <button class="wrtn-quote-download-btn" id="wrtn-download-btn">이미지 저장🌸</button>
                 </div>
             </div>
         </div>
