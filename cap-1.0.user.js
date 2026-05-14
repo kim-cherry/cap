@@ -9,6 +9,7 @@
 // @grant        GM_addStyle
 // ==/UserScript==
 
+
 (function () {
   "use strict";
 
@@ -231,7 +232,7 @@
                     </div>
 
                     <label class="wrtn-quote-file-label" id="wrtn-img-upload-label" style="display:none;">
-                        이미지 업로드
+                        <span id="wrtn-img-upload-text">이미지 업로드</span>
                         <input type="file" accept="image/*" class="wrtn-quote-file-input" id="wrtn-img-input" />
                     </label>
                 </div>
@@ -261,7 +262,7 @@
                 </div>
 
                 <div class="wrtn-quote-control-group">
-                    <label>스토리 이름</label>
+                    <label>세션 이름 (하단 텍스트)</label>
                     <input type="text" class="wrtn-quote-input" id="wrtn-session-input" />
                 </div>
 
@@ -332,6 +333,17 @@
 
   function closeModal() {
     backdrop.classList.remove("active");
+
+    // 상태 초기화
+    customImageUrl = null;
+    currentBgType = "gradient";
+    document.getElementById("btn-bg-grad").classList.add("active");
+    document.getElementById("btn-bg-img").classList.remove("active");
+    document.getElementById("wrtn-gradient-options").style.display = "grid";
+    document.getElementById("wrtn-img-upload-label").style.display = "none";
+    document.getElementById("wrtn-img-upload-text").innerText = "이미지 업로드";
+    document.getElementById("wrtn-img-input").value = "";
+    updateCardBackground();
   }
 
   // Event Listeners (Modal)
@@ -423,7 +435,8 @@
       reader.onload = (event) => {
         customImageUrl = event.target.result;
         updateCardBackground();
-        imgUploadLabel.innerText = "이미지 변경 완료";
+        document.getElementById("wrtn-img-upload-text").innerText = "이미지 변경 완료";
+        e.target.value = ""; // 동일 이미지 재업로드 가능하도록 input 초기화
       };
       reader.readAsDataURL(file);
     }
